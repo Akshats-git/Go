@@ -4,7 +4,7 @@
 
 ---
 
-## Anatomy
+## The structure
 
 ```go
 func add(x int, y int) int {
@@ -16,11 +16,11 @@ func add(x int, y int) int {
 |---|---|
 | `func` | the keyword every function starts with |
 | `add` | the name |
-| `(x int, y int)` | parameters — **name first, type second**, comma separated |
-| `int` | the return type — **mandatory** to declare |
-| `{ ... }` | opening brace on the **same line** |
+| `(x int, y int)` | parameters. **Name first, type second.** Comma separated. |
+| `int` | the return type. You **must** declare it. |
+| `{ ... }` | opening brace goes on the **same line** |
 
-The name-then-type ordering is the reverse of C/Java and is consistent everywhere in Go (variables, struct fields, parameters).
+Note the name-then-type order. It is the reverse of C and Java. Go is consistent about it everywhere. Variables, struct fields, and parameters all work this way.
 
 ### Static typing is enforced here
 
@@ -29,25 +29,25 @@ add("hello", 7)
 // cannot use "hello" (untyped string constant) as int value in argument to add
 ```
 
-Go is statically typed — argument types are verified at compile time, not runtime.
+Go is statically typed. Argument types are checked when you compile, not when you run.
 
 ---
 
-## Shortening consecutive same-type parameters
+## Shortening parameters of the same type
 
 ```go
-func add(x, y int) int { ... }   // equivalent to (x int, y int)
+func add(x, y int) int { ... }   // same as (x int, y int)
 ```
 
-If consecutive parameters share a type, you can drop the type from all but the last.
+If parameters sit next to each other and share a type, you can drop the type from all but the last one.
 
-> **The video's preference:** use the explicit long form `(x int, y int)`. On first read it states outright that x is an int and y is an int — slightly more readable, less room for misreading. Personal preference, not a rule.
+> **The video prefers the long form** `(x int, y int)`. On first read it says outright that x is an int and y is an int. That is slightly more readable and leaves less room for a misread. This is a preference, not a rule.
 
 ---
 
 ## Multiple return values
 
-Go functions can return more than one value. This is used *constantly* — it's the foundation of Go's error handling.
+A Go function can return more than one value. You will use this constantly. It is the foundation of Go's error handling.
 
 ```go
 func swap(x, y string) (string, string) {
@@ -60,15 +60,17 @@ func main() {
 }
 ```
 
-- More than one return value ⇒ **parentheses required** around the return types.
-- Exactly one return value ⇒ no parentheses (`func f() string`).
-- Receive them with a comma-separated list of variables, positionally.
+Three things to remember here.
+
+- More than one return value means you **need parentheses** around the return types.
+- Exactly one return value means no parentheses. Just `func f() string`.
+- You receive the values with a comma-separated list of variables. They come back in order.
 
 ---
 
-## Named return values (and why to avoid them)
+## Named return values (and why to skip them)
 
-Go lets you name the return values in the signature:
+Go lets you name the return values in the signature.
 
 ```go
 func split(sum int) (x, y int) {
@@ -78,19 +80,25 @@ func split(sum int) (x, y int) {
 }
 ```
 
-What happens:
+Here is what happens.
 
-- `x` and `y` are **declared and zero-initialized** at the top of the function body, before the first statement runs.
-- That's why the body **assigns** (`x =`) rather than declares (`x :=`).
-- A bare `return` returns whatever `x` and `y` currently hold.
+`x` and `y` are **declared and set to zero** at the top of the function body. This happens before the first statement runs.
 
-### The recommendation: don't use this
+That is why the body uses `x =` to assign, not `x :=` to declare.
+
+A bare `return` sends back whatever `x` and `y` hold at that moment.
+
+### The recommendation: do not use this
 
 > "I have never used it. I don't want to use it."
 
-The problem is readability at scale. In a long function, you reach a bare `return` at the bottom and have no idea what it returns. You have to scroll to the signature, find the names, then trace those variables through the whole body. It makes things more complicated than they need to be, and it's error-prone.
+The problem is readability in long functions.
 
-**Prefer the explicit form:**
+You reach a bare `return` at the bottom of a function. You have no idea what it returns. So you scroll up to the signature. You find the names. Then you trace those variables through the whole body.
+
+It makes things more complicated than they need to be. It is also easy to get wrong.
+
+Write it explicitly instead:
 
 ```go
 func split(sum int) (int, int) {
@@ -100,18 +108,21 @@ func split(sum int) (int, int) {
 }
 ```
 
-Same result, and the return statement tells you exactly what comes back.
+Same result. And now the return statement tells you exactly what comes back.
 
-**Know that naked returns exist** (you'll read them in other people's code) — just don't write them.
+**You should still know naked returns exist.** You will read them in other people's code. Just do not write them.
 
 ---
 
-## Related
+## Related topics
 
-- Functions are **first-class values** in Go — assignable to variables, passable as arguments, returnable. See [10 — Functions as values](10-functions-as-values.md).
-- Functions attached to a type are **methods**. See [11 — Methods](11-methods.md).
-- A function's *signature* is what satisfies an **interface**. See [12 — Interfaces](12-interfaces.md).
-- Variadic functions (`func f(args ...int)`) accept any number of arguments — `append`, `fmt.Println` and friends are variadic. Covered in [08 — Arrays & slices](08-arrays-and-slices.md).
+Functions are **first-class values** in Go. You can assign them to variables, pass them as arguments, and return them. See [10 — Functions as values](10-functions-as-values.md).
+
+A function attached to a type is a **method**. See [11 — Methods](11-methods.md).
+
+A function's *signature* is what satisfies an **interface**. See [12 — Interfaces](12-interfaces.md).
+
+Variadic functions take any number of arguments. They look like `func f(args ...int)`. `append` and `fmt.Println` are variadic. See [08 — Arrays & slices](08-arrays-and-slices.md).
 
 ---
 

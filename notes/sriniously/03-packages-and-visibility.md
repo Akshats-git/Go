@@ -6,21 +6,25 @@
 
 ## Why packages exist
 
-Write everything in one file and it works — for a small script. At thousands, then millions of lines, it becomes impossible to read and impossible to debug. Every language has a mechanism for this (JavaScript has CommonJS/ESM imports and exports). Go has exactly two levels:
+You can write everything in one file. It works fine for a small script.
 
-1. **Modules** — one per project, created once with `go mod init`, then never thought about again.
-2. **Packages** — the actual code-organization unit.
+But programs grow. At thousands of lines, then millions, a single file becomes impossible to read and impossible to debug.
 
-That's the entire code-management story in Go. Nothing else.
+Every language solves this somehow. JavaScript has CommonJS and ESM imports and exports. Go has exactly two levels.
+
+1. **Modules.** One per project. You create it once with `go mod init` and then forget about it.
+2. **Packages.** This is the real code organization unit.
+
+That is the entire story. Go has nothing else for organizing code.
 
 ---
 
 ## The rules
 
-- **Every `.go` file** begins with a package declaration. The filename itself is irrelevant.
-- **One package per directory.** All files in a folder declare the same package.
+- **Every `.go` file** starts with a package declaration. The filename does not matter.
+- **One package per directory.** Every file in a folder declares the same package.
 - **By convention the package name matches the folder name.**
-- Test files conventionally use a `_test` suffix on the package name.
+- Test files conventionally add a `_test` suffix to the package name.
 - An **executable** must have `package main` containing `func main()`.
 
 ```go
@@ -29,7 +33,7 @@ package handlers   // file lives in the handlers/ directory
 
 ---
 
-## Import paths: only the last segment matters
+## Import paths: only the last part matters
 
 ```go
 import "math/rand"
@@ -39,7 +43,7 @@ func main() {
 }
 ```
 
-The prefix is just the path to find it. **The last segment is the identifier you use in code.**
+The prefix is only there so Go can find the package. **The last segment is the name you actually type in your code.**
 
 ```go
 import (
@@ -51,16 +55,16 @@ import (
 )
 ```
 
-Multiple imports go in a parenthesized block, one per line.
+When you have several imports, put them in a parenthesized block. One per line.
 
 ---
 
 ## Package naming conventions
 
-Two rules, both driven by the fact that you type the package name at every use site:
+There are two rules. Both exist because you type the package name at every use site.
 
-1. **All lowercase.** `main`, `fmt`, `rand`, `handlers`, `actions`. Never capitalized.
-2. **As short as possible.** Not a hard rule, a strong convention. You'll write this name hundreds of times — a ten-letter package name is a tax on every line.
+1. **All lowercase.** Like `main`, `fmt`, `rand`, `handlers`, `actions`. Never capitalized.
+2. **As short as possible.** This is a strong convention rather than a hard rule. You will write this name hundreds of times. A ten-letter package name is a tax on every line.
 
 ### Real-world check (fider)
 
@@ -78,12 +82,12 @@ Test files in `actions/` use `actions_test`.
 
 [▶ 57:20 area](https://www.youtube.com/watch?v=tgGNwG_UxFo&t=3440s)
 
-This is Go's encapsulation mechanism, and it applies to **everything** — variables, constants, functions, types, struct fields, methods, interfaces.
+This is how Go does encapsulation. It applies to **everything**. Variables, constants, functions, types, struct fields, methods, and interfaces.
 
 | First letter | Visibility |
 |---|---|
-| **Capital** | **Exported** — accessible from other packages |
-| lowercase | **Unexported** — visible only inside its own package |
+| **Capital** | **Exported.** Other packages can access it. |
+| lowercase | **Unexported.** Only its own package can access it. |
 
 ```go
 import "math"
@@ -94,13 +98,17 @@ func main() {
 }
 ```
 
-The error surfaces at **compile time** — and in an editor with Go LSP support (VS Code + Go extension, GoLand, Neovim + gopls), you see it inline before you ever run the program. That instant feedback is a real argument for using an editor with first-class Go support.
+You get this error at **compile time**.
+
+And if your editor has Go LSP support, you see it as you type. That works in VS Code with the Go extension, in GoLand, and in Neovim with gopls. That instant feedback is a real reason to use an editor with proper Go support.
 
 ### Why it matters in practice
 
-If a struct field is lowercase, code in other packages cannot read or write it. The video demonstrates this by lowercasing one exported field of a struct in fider — errors immediately light up across every file in other packages that touched it.
+If a struct field is lowercase, other packages cannot read it or write it.
 
-If you come from OOP, map this onto `public` / `private`. But don't try to think in objects when writing Go — it's the same *idea* (hide implementation, expose an interface), not the same model.
+The video shows this in fider. He lowercases one exported field of a struct. Errors immediately appear in every file in other packages that used it.
+
+If you come from an object-oriented language, this maps onto `public` and `private`. But do not try to think in objects when writing Go. It is the same *idea* (hide the implementation, expose an interface). It is not the same model.
 
 ---
 

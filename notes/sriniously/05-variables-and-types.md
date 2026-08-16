@@ -6,7 +6,7 @@
 
 ## Declaring variables
 
-### `var` — works anywhere
+### `var` works anywhere
 
 ```go
 var c, python, java bool         // package level or function level
@@ -15,9 +15,9 @@ var i, j int = 1, 2              // with initializers
 var v = 10                       // type inferred from initializer
 ```
 
-If several variables share a type, one type annotation at the end covers them all. Different types ⇒ annotate each.
+If several variables share a type, one type annotation at the end covers them all. If they have different types, annotate each one.
 
-### `:=` — short declaration, functions only
+### `:=` works only inside functions
 
 ```go
 func main() {
@@ -32,31 +32,33 @@ k := 8   // ❌ at package level: "expected declaration, found k"
 
 **`:=` only works inside a function.** Package-level declarations must use `var`.
 
-`var v = 10` and `v := 10` are the same thing — `:=` is syntactic sugar for it.
+`var v = 10` and `v := 10` mean the same thing. `:=` is just a shorter way to write it.
 
 ---
 
-## Which form to use — the decision rule
+## Which form to use
 
-Three cases, and only three:
+There are only three cases.
 
 | Situation | Use | Why |
 |---|---|---|
-| Initial value **doesn't matter** — will be set later in the program | `var i int` | Signals to the reader: "starts at zero value, real value assigned later" |
-| Initial value **is known and matters** | `i := 7` | Most common by far |
-| **Outside a function** (package level) | `var c bool` | No choice — `:=` is illegal here |
+| The starting value **does not matter**. It gets set later. | `var i int` | Tells the reader: starts at zero, real value comes later |
+| The starting value **is known and matters** | `i := 7` | By far the most common |
+| You are **outside a function** | `var c bool` | No choice. `:=` is illegal here. |
 
 ### Real-world check (fider)
 
-- Package-level variables: all `var` — forced.
-- Inside functions: `var err error` before a block where the error gets assigned later by a function call. Initial value is meaningless, so `var` communicates that.
-- `:=` everywhere else — global search shows it's the default. Most of the time you know the initial value.
+Package-level variables all use `var`. They have no choice.
+
+Inside functions you see `var err error` before a block where the error gets assigned by a later function call. The starting value is meaningless there, so `var` communicates that.
+
+Everywhere else it is `:=`. A global search shows it is the default. Most of the time you know the starting value.
 
 ---
 
-## Zero values — the core guarantee
+## Zero values
 
-**A Go variable is never uninitialized, undefined, or null.** Every declaration produces a value.
+This is a core guarantee. **A Go variable is never uninitialized, undefined, or null.** Every declaration produces a real value.
 
 | Type | Zero value |
 |---|---|
@@ -65,7 +67,7 @@ Three cases, and only three:
 | `string` | `""` |
 | All **reference types** (pointer, slice, map, channel, func) | `nil` |
 | `interface` | `nil` |
-| **Array** | the array with every element at its zero value — `[4]int{}` → `[0 0 0 0]` |
+| **Array** | the array with every element at its zero value. `[4]int{}` becomes `[0 0 0 0]` |
 | **Struct** | the struct with every field at its zero value |
 
 ```go
@@ -76,40 +78,40 @@ type T struct {
 var t T   // T{A: 0, B: ""}
 ```
 
-This is why Go has no null-pointer-exception epidemic for value types, and why `if err != nil` works — see [12 — Interfaces](12-interfaces.md).
+This is why Go does not have a null pointer problem for value types. It is also why `if err != nil` works. See [12 — Interfaces](12-interfaces.md).
 
 ---
 
 ## The four categories of Go types
 
-The video's taxonomy — a useful mental map:
+The video groups types this way. It is a useful map to keep in your head.
 
 ### 1. Basic
-- **Numbers** — integers, unsigned integers, floats, complex, plus `byte` and `rune`
+- **Numbers.** Integers, unsigned integers, floats, complex, plus `byte` and `rune`.
 - **String**
 - **Bool**
 
 ### 2. Aggregate
-Types built out of other types:
-- **Array** — collection of **homogeneous** data (all one type)
-- **Struct** — collection of **heterogeneous** data (mixed types)
+These are built out of other types.
+- **Array.** A collection of **homogeneous** data. Everything is the same type.
+- **Struct.** A collection of **heterogeneous** data. Mixed types.
 
 ### 3. Reference
-They don't hold the data themselves; they *refer* to underlying data working in the background. **Five of them:**
+These do not hold the data themselves. They point to data working in the background. There are **five of them**.
 - **Pointer**
 - **Slice**
 - **Map**
 - **Channel**
 - **Function**
 
-All have zero value `nil`.
+All five have a zero value of `nil`.
 
 ### 4. Interface
 Its own category. See [12 — Interfaces](12-interfaces.md).
 
 ---
 
-## Numeric types in detail
+## Numeric types
 
 ```
 int  int8  int16  int32  int64
@@ -121,21 +123,21 @@ byte = uint8      rune = int32
 
 ### What the number means
 
-The number is the **bit width**, which determines the range.
+The number is the **bit width**. It decides the range.
 
-- `int8` → 8 bits → 2⁸ = 256 distinct values, signed → **−128 to 127**
-- `uint8` → 8 bits → 256 values, unsigned → **0 to 255**
-- Same logic scales to 16, 32, 64.
+- `int8` uses 8 bits. That is 2⁸ = 256 possible values. It is signed, so the range is **−128 to 127**.
+- `uint8` uses 8 bits too. That is 256 values. It is unsigned, so the range is **0 to 255**.
+- The same logic applies to 16, 32, and 64.
 
-> ⚠️ **Correction:** the video says `int8` ranges "−127 to +128." It's **−128 to +127** (one extra negative slot because zero occupies a positive-side value). `uint8` = 0–255 as stated, correct.
+The signed range is not symmetric. Zero takes up a slot on the positive side. So there is one more negative value than positive.
 
-### Plain `int` / `uint`
+### Plain `int` and `uint`
 
-Sized by your platform architecture: 32 bits on a 32-bit system, 64 bits on a 64-bit system.
+These are sized by your machine. They are 32 bits on a 32-bit system and 64 bits on a 64-bit system.
 
-**The official recommendation: default to `int` / `uint`.** Reach for a sized type only when you genuinely know the range.
+**The official recommendation is to default to `int` and `uint`.** Only use a sized type when you actually know the range.
 
-### When a sized type is worth it — real example
+### When a sized type is worth it
 
 fider defines log levels as `uint8`:
 
@@ -151,19 +153,22 @@ const (
 )
 ```
 
-The range is 1 to maybe 5 (worst case 10 or 12). On a 64-bit machine `uint` would allocate 64 bits per value for something that never exceeds a handful. `uint8` (0–255) is plenty and saves memory across many instances.
+The range here is 1 to maybe 5. Worst case 10 or 12.
 
-**Rule of thumb:** if you know the maximum value in advance, size the type to it. If you're handling user data or values of unknown magnitude, use plain `int` — the performance difference is negligible and the docs recommend it.
+On a 64-bit machine, plain `uint` would use 64 bits for each value. That is a lot for something that never goes past a handful. `uint8` handles 0 to 255, which is plenty. It saves memory when you have many of them.
+
+**Rule of thumb.** If you know the maximum value in advance, size the type to it. If you are handling user data or values of unknown size, use plain `int`. The performance difference is tiny and the docs recommend it.
 
 ### `byte` and `rune`
 
-- `byte` = alias for `uint8` — used to represent the raw bytes of strings
-- `rune` = alias for `int32` — used to represent a single UTF-8 character
+- `byte` is an alias for `uint8`. It represents the raw bytes of strings.
+- `rune` is an alias for `int32`. It represents one UTF-8 character.
 
 ### Floats and complex
 
-- Floats: only `float32` and `float64`. No platform-sized `float`.
-- Complex: `complex64`, `complex128`. Exist; you will likely never use them.
+Floats only come in `float32` and `float64`. There is no platform-sized `float`.
+
+Complex numbers come as `complex64` and `complex128`. They exist. You will probably never use them.
 
 ---
 
@@ -186,13 +191,13 @@ fmt.Printf("%v\n", s)   // (prints nothing — empty string)
 fmt.Printf("%q\n", s)   // ""
 ```
 
-Don't memorize the verbs. You'll absorb the handful you use.
+Do not memorize the verbs. You will absorb the few you actually use.
 
 ---
 
-## Type conversion — always explicit
+## Type conversion is always explicit
 
-Go performs **no implicit conversion**, ever. Not even between numeric types that "obviously" fit.
+Go never converts types for you. Not even between numeric types that obviously fit.
 
 ```go
 var k int64 = 32
@@ -209,9 +214,9 @@ z := uint(f)
 fmt.Println(x, y, z)   // 3 4 5
 ```
 
-Syntax is `TypeName(value)`.
+The syntax is `TypeName(value)`.
 
-You rarely have to *worry* about this: these are compile-time errors, so your editor's LSP flags them as you type. You fix them while writing, not while debugging.
+You rarely have to think hard about this. These are compile-time errors, so your editor flags them as you type. You fix them while writing, not while debugging.
 
 ---
 
@@ -223,14 +228,16 @@ v := 42.7      // float64
 v := "hello"   // string
 ```
 
-The compiler derives the type from the initializer. **It's inferred exactly once, and it's permanent:**
+The compiler works out the type from the value you assign.
+
+**It infers the type once, and it is permanent.**
 
 ```go
 v := "hello"
 v = 9   // ❌ cannot use 9 (untyped int constant) as string value
 ```
 
-The type is fixed for the variable's whole lifetime. That's what "statically typed" means.
+The type is fixed for the whole life of the variable. That is what statically typed means.
 
 ---
 
@@ -242,22 +249,22 @@ const Truth = true
 const World = "世界"
 ```
 
-**Properties:**
+Constants have four properties.
 
-1. **Must be initialized at declaration.** No `const x int` — that's an error.
-2. **Cannot be reassigned.** `Truth = false` → *cannot assign to Truth (neither addressable nor a map index expression)*, a compile-time error.
-3. **Evaluated at compile time**, not runtime. That's *why* an initializer is mandatory — the compiler has to know the value.
-4. **Only three types allowed:** number, string, bool.
+1. **You must give them a value at declaration.** `const x int` is an error.
+2. **You cannot reassign them.** Writing `Truth = false` gives you a compile-time error.
+3. **They are evaluated at compile time,** not at runtime. That is *why* the value is mandatory. The compiler has to know it.
+4. **Only three types are allowed.** Number, string, and bool.
 
 ### When to use a constant
 
-Any time you have a **hardcoded value**: a port number, a URL, an allowed set of values to validate against, a magic number.
+Use one any time you have a **hardcoded value**. A port number. A URL. A set of allowed values you validate against. A magic number.
 
-Naming it as a constant does two things: gives it **semantic meaning** for the reader, and gives it a **compile-time guarantee** that it can never change.
+Naming it does two things. It gives the value **meaning** for the reader. And it gives you a **compile-time guarantee** that it can never change.
 
 ### Real-world check (fider)
 
-Constants are used to implement an **enum pattern** — Go has no native enum:
+Constants are used to build an **enum**, since Go has no native enum type:
 
 ```go
 const (
@@ -267,7 +274,7 @@ const (
 )
 ```
 
-Three otherwise-meaningless integers get meaningful names. (The full idiomatic enum pattern with `iota` and a `String()` method comes later in the series.)
+Three meaningless integers now have meaningful names. The full idiomatic enum pattern uses `iota` and a `String()` method. That comes later in the series.
 
 ---
 

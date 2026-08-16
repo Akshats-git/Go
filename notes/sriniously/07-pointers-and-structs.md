@@ -2,11 +2,11 @@
 
 ---
 
-## Reference types recap
+## Reference types
 
 [▶ 2:03:27](https://www.youtube.com/watch?v=tgGNwG_UxFo&t=7407s)
 
-Go has **five reference types**:
+Go has **five reference types**.
 
 | Type | Covered in |
 |---|---|
@@ -16,7 +16,9 @@ Go has **five reference types**:
 | **Channel** | [14 — Concurrency](14-concurrency.md) |
 | **Function** | [10 — Functions as values](10-functions-as-values.md) |
 
-They're "reference" types because **they don't contain the data themselves** — they refer to some underlying data working in the background. All five have zero value `nil`.
+They are called reference types because **they do not hold the data themselves**. They refer to data working in the background.
+
+All five have a zero value of `nil`.
 
 ---
 
@@ -24,14 +26,18 @@ They're "reference" types because **they don't contain the data themselves** —
 
 A pointer stores the **memory address** of a variable.
 
-Mental model: your program's memory is a grid of slots. Every variable lives in a slot, and every slot has an address. (In Go it's a *virtual* address — you're abstracted from the kernel by the Go runtime — but reason about it as a physical address.) A pointer is a variable whose value *is* one of those addresses.
+Here is the mental model. Your program's memory is a grid of slots. Every variable lives in a slot. Every slot has an address.
+
+In Go it is a *virtual* address. The Go runtime keeps you away from the kernel. But you can reason about it as a physical address.
+
+A pointer is a variable whose value *is* one of those addresses.
 
 ### The two operators
 
-| Operator | Name | Does |
+| Operator | Name | What it does |
 |---|---|---|
 | `&x` | address-of | gives you the address of `x` |
-| `*p` | dereference | gives you the **value** at the address `p` holds |
+| `*p` | dereference | gives you the **value** stored at the address in `p` |
 
 ### Worked example
 
@@ -52,12 +58,15 @@ Output: `42`, `21`, `73`.
 
 ### The key points
 
-- `p := &i` makes `p` type `*int`. **`p` is not an int** — it's a pointer that points to an int.
-- **Printing `p` directly prints the address** (a garbage-looking hex value), not the data. Print `*p` for the value.
-- **Writing through a pointer mutates the original.** `*p = 21` changes `i`.
-- Contrast with plain assignment: `p := i` copies the value. Changing `p` afterwards leaves `i` untouched. With a pointer, both names refer to the same storage.
+`p := &i` makes `p` a `*int`. **`p` is not an int.** It is a pointer that points to an int.
 
-Pointers show up constantly — method receivers, avoiding large copies, letting a function modify its caller's data. More in [11 — Methods](11-methods.md).
+**Printing `p` directly prints the address.** You get a garbage-looking hex value, not the data. Print `*p` to see the value.
+
+**Writing through a pointer changes the original.** `*p = 21` changed `i`.
+
+Compare this to plain assignment. `p := i` copies the value. If you change `p` after that, `i` stays the same. With a pointer, both names refer to the same storage.
+
+Pointers show up constantly. You will see them in method receivers, in avoiding large copies, and whenever a function needs to modify its caller's data. See [11 — Methods](11-methods.md).
 
 ---
 
@@ -65,11 +74,11 @@ Pointers show up constantly — method receivers, avoiding large copies, letting
 
 [▶ 2:10:00](https://www.youtube.com/watch?v=tgGNwG_UxFo&t=7800s)
 
-A struct is an **aggregate type**: a collection of **heterogeneous** fields. (An array is the other aggregate type — homogeneous.)
+A struct is an **aggregate type**. It is a collection of **heterogeneous** fields, meaning fields of different types. An array is the other aggregate type, and it is homogeneous.
 
-You will use structs constantly. Day-to-day Go backend work is largely structs.
+You will use structs constantly. Day-to-day Go backend work is mostly structs.
 
-### Declaring
+### Declaring one
 
 ```go
 type Vertex struct {
@@ -78,9 +87,9 @@ type Vertex struct {
 }
 ```
 
-`type <Name> struct { ... }` — field name, then field type.
+The pattern is `type <Name> struct { ... }`. Then field name, then field type.
 
-Consecutive same-typed fields can be merged:
+If fields sit next to each other and share a type, you can merge them:
 
 ```go
 type Vertex struct {
@@ -88,7 +97,7 @@ type Vertex struct {
 }
 ```
 
-### Initializing — four forms
+### Four ways to initialize
 
 ```go
 v1 := Vertex{1, 2}        // positional — X=1, Y=2, order matters
@@ -97,11 +106,11 @@ v3 := Vertex{}            // everything at zero value — X=0, Y=0
 p  := &Vertex{1, 2}       // pointer to a struct — type is *Vertex
 ```
 
-Printed: `{1 2}`, `&{1 2}`, `{1 0}`, `{0 0}`.
+These print as `{1 2}`, `&{1 2}`, `{1 0}`, and `{0 0}`.
 
-Named-field form is generally the readable choice — it survives field reordering and doesn't require memorizing positions.
+The named-field form is usually the better choice. It survives field reordering. And you do not have to remember positions.
 
-### Accessing and mutating fields
+### Reading and changing fields
 
 ```go
 v := Vertex{1, 2}
@@ -110,9 +119,9 @@ v.X = 4
 fmt.Println(v.X)   // 4
 ```
 
-### Structs + pointers
+### Structs and pointers together
 
-This combination is used heavily in real code:
+You will see this combination everywhere in real code.
 
 ```go
 v := Vertex{1, 2}
@@ -121,7 +130,7 @@ p.X = 1e9            // mutates v itself
 fmt.Println(v)       // {1000000000 2}
 ```
 
-Note you write `p.X`, not `(*p).X`. **Go automatically dereferences pointers to structs for field access** — a convenience that keeps the syntax clean. The same automatic behavior applies to method calls, see [11 — Methods](11-methods.md).
+Notice you write `p.X`, not `(*p).X`. **Go dereferences pointers to structs for you** when you access a field. It keeps the syntax clean. The same thing happens with method calls. See [11 — Methods](11-methods.md).
 
 ---
 
@@ -129,7 +138,7 @@ Note you write `p.X`, not `(*p).X`. **Go automatically dereferences pointers to 
 
 [▶ ~2:16:00](https://www.youtube.com/watch?v=tgGNwG_UxFo&t=8160s)
 
-Real-world structs carry backtick-quoted metadata after the field type:
+Real-world structs have backtick-quoted metadata after the field type.
 
 ```go
 type BillingSubscription struct {
@@ -140,22 +149,24 @@ type BillingSubscription struct {
 
 ### Why they exist
 
-Unlike JavaScript, **Go cannot use JSON directly**. Incoming JSON arrives as bytes; you must *unmarshal* it into a Go struct before you can work with it.
+Unlike JavaScript, **Go cannot use JSON directly.** JSON arrives as bytes. You have to *unmarshal* it into a Go struct before you can work with it.
 
-But naming conventions clash — JSON payloads use `planID` or `plan_id`, Go fields must be `PascalCase` (to be exported, so the JSON package can see them). Struct tags are the **mapping layer**:
+But the naming conventions clash. JSON payloads use `planID` or `plan_id`. Go fields have to be `PascalCase` so they are exported and the JSON package can see them.
+
+Struct tags are the **mapping layer** between the two.
 
 ```
 {"planID": 3}   ──unmarshal──►   BillingSubscription{PlanID: 3}
                   guided by the `json:"planID"` tag
 ```
 
-Different tag keys serve different libraries — `json:`, `db:`, `validate:`, `yaml:` — so one struct can describe how it maps into several systems at once. Fider's structs carry several depending on which package consumes them.
+Different tag keys serve different libraries. You will see `json:`, `db:`, `validate:`, and `yaml:`. One struct can describe how it maps into several systems at once. fider's structs carry several tags depending on which package uses them.
 
 ---
 
 ## Exported struct fields
 
-Field capitalization follows the same visibility rule as everything else ([03 — Packages & visibility](03-packages-and-visibility.md)):
+Field capitalization follows the same visibility rule as everything else. See [03 — Packages & visibility](03-packages-and-visibility.md).
 
 ```go
 type User struct {
@@ -165,11 +176,11 @@ type User struct {
 }
 ```
 
-This is **not styling**. The video demonstrates the consequence by lowercasing one field of a fider struct that another package imports — errors immediately appear everywhere that field was accessed.
+**This is not a styling choice.** The video shows what happens by lowercasing one field of a fider struct that another package imports. Errors appear immediately everywhere that field was used.
 
-It also matters for JSON: `encoding/json` can only marshal/unmarshal **exported** fields. A lowercase field silently won't appear in your JSON output.
+It matters for JSON too. `encoding/json` can only marshal and unmarshal **exported** fields. A lowercase field will silently disappear from your JSON output.
 
-### Real-world shapes (fider)
+### Real-world shape (fider)
 
 ```go
 type User struct {
@@ -182,7 +193,7 @@ type User struct {
 }
 ```
 
-Structs hold anything — ints, strings, bools, slices, maps, pointers, other structs. That versatility is why they're everywhere.
+Structs hold anything. Ints, strings, bools, slices, maps, pointers, and other structs. That flexibility is why they are everywhere.
 
 ---
 

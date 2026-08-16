@@ -2,33 +2,41 @@
 
 [▶ 3:19:30](https://www.youtube.com/watch?v=tgGNwG_UxFo&t=11970s)
 
-Go's hash table. Called dictionaries/hashes/hashmaps elsewhere; in Go it's a `map`.
+A map is Go's hash table. Other languages call this a dictionary, a hash, or a hashmap. In Go it is a `map`.
 
 ---
 
-## Shape
+## The shape
 
 ```go
 map[KeyType]ValueType
 ```
 
-- **Keys must be comparable** — they must support `==`. Strings, numbers, bools, pointers, structs of comparable fields. Not slices, maps, or functions.
-- **Values can be anything.**
-- Keys are most often strings, but don't have to be.
+Three rules.
+
+**Keys must be comparable.** They have to work with `==`. That includes strings, numbers, bools, pointers, and structs made of comparable fields. It excludes slices, maps, and functions.
+
+**Values can be anything.**
+
+Keys are usually strings. They do not have to be.
 
 ---
 
-## Why maps: lookup speed
+## Why maps exist: fast lookup
 
 > "We use maps when we want to find things quickly."
 
-Maps give O(1) average lookup, insert, and delete. That's the whole reason they exist. If you're storing a record, use a struct. If you're going to search for things by key, use a map.
+Maps give you O(1) average lookup, insert, and delete.
+
+That is the whole reason to use one. If you are storing a record, use a struct. If you are going to search for things by key, use a map.
 
 ---
 
 ## Creating a map
 
-### With `make` (a map is a reference type)
+### With `make`
+
+A map is a reference type, so `make` works on it.
 
 ```go
 type Vertex struct {
@@ -53,31 +61,33 @@ var m = map[string]Vertex{
 }
 ```
 
-Since the value type is known, the inner `Vertex` can be omitted from each entry.
+Since Go already knows the value type, you can leave out `Vertex` on each entry.
 
 ---
 
-## ⚠️ The `var` trap — writing to a nil map panics
+## ⚠️ The `var` trap
+
+Writing to a nil map panics.
 
 ```go
 var m map[string]int
 m["one"] = 9        // 💥 panic: assignment to entry in nil map
 ```
 
-`var` gives you the zero value of a map, which is `nil`. **A nil map cannot be written to.**
+`var` gives you the zero value of a map. The zero value is `nil`. **You cannot write to a nil map.**
 
-> **There are exactly two ways to create a usable map: `make`, or a map literal.** Never `var`, unless you know precisely what you're doing.
+> **There are exactly two ways to create a usable map. Use `make`, or use a map literal.** Never use `var` unless you know exactly what you are doing.
 
 ```go
 m := make(map[string]int)        // ✅
 m := map[string]int{}            // ✅
 ```
 
-*(Reading from a nil map is actually safe — it returns the zero value. It's only writes that panic. But the rule "always use `make` or a literal" is the one to internalize.)*
+*(Only writes panic. Reading from a nil map is safe and returns the zero value. Either way, "always use `make` or a literal" is the rule to internalize.)*
 
 ---
 
-## Mutating a map
+## Changing a map
 
 ```go
 m := make(map[string]int)
@@ -96,9 +106,11 @@ fmt.Println(m["Answer"])       // 0  ← ???
 
 ## The comma-ok idiom
 
-That last `0` is the problem: **is the value actually 0, or is the key absent?** A missing key returns the value type's zero value, so you can't distinguish them from the value alone.
+That last `0` is a problem. **Is the value really 0, or is the key missing?**
 
-Go's answer — the two-value form of a map read:
+A missing key returns the zero value of the value type. So you cannot tell the two apart from the value alone.
+
+Go's answer is the two-value form of a map read.
 
 ```go
 v, ok := m["Answer"]
@@ -106,8 +118,8 @@ v, ok := m["Answer"]
 
 | Return | Meaning |
 |---|---|
-| `v` | the value if present, otherwise the zero value |
-| `ok` | `true` if the key exists, `false` if not |
+| `v` | the value if the key exists, otherwise the zero value |
+| `ok` | `true` if the key exists, `false` if it does not |
 
 ```go
 if v, ok := m["Answer"]; ok {
@@ -117,13 +129,15 @@ if v, ok := m["Answer"]; ok {
 }
 ```
 
-**Convention: name the second variable `ok`.** Other engineers immediately recognize you're testing existence. (Combines nicely with `if`'s init statement — see [06 — Control flow](06-control-flow.md).)
+**By convention you name the second variable `ok`.** Other engineers will immediately see that you are testing for existence.
+
+This combines well with `if`'s init statement. See [06 — Control flow](06-control-flow.md).
 
 ---
 
-## Iterating a map
+## Looping over a map
 
-Same `range` construct as slices, but it yields **key, value** instead of index, value:
+You use the same `range` as with slices. But it gives you **key and value** instead of index and value.
 
 ```go
 for key, value := range m {
@@ -134,34 +148,36 @@ for _, value := range m { ... }   // keys discarded
 for key := range m { ... }        // values omitted
 ```
 
-### ⚠️ Iteration order is deliberately randomized
+### ⚠️ The order is randomized on purpose
 
-Go **intentionally randomizes** map iteration order so you can never accidentally depend on it. Two runs of the same program give different orders.
+Go **deliberately randomizes** map iteration order. This stops you from accidentally depending on it. Run the same program twice and you get different orders.
 
-**If you need a stable order, extract the keys into a slice and sort them yourself.**
+**If you need a stable order, pull the keys into a slice and sort them yourself.**
 
 ---
 
-## Maps vs structs — when to use which
+## Maps vs structs
 
 [▶ 3:30:40](https://www.youtube.com/watch?v=tgGNwG_UxFo&t=12640s)
 
-The one-line mental model:
+Here is the one-line rule.
 
 > **Structs are for storing data. Maps are for looking data up.**
 
-Oversimplified but a good default. Roughly 70% of the time in backend code, you want a struct.
+That is oversimplified, but it is a good default. In backend code you want a struct roughly 70% of the time.
 
-### The concrete differences
+### The real differences
 
 | | Struct | Map |
 |---|---|---|
-| **Fields known at compile time?** | Yes — fixed, static | No — dynamic, arbitrary keys |
-| **Can you `range` over it?** | ❌ No — the fields are already written down in your code, there's nothing to discover | ✅ Yes |
-| **Do entries have stable memory addresses?** | ✅ Yes — you can take `&s.Field` | ❌ **No** — you cannot take the address of a map entry |
-| **Iteration order** | n/a | Randomized on purpose |
+| **Fields known at compile time?** | Yes. Fixed and static. | No. Dynamic, arbitrary keys. |
+| **Can you `range` over it?** | ❌ No. The fields are already written in your code. There is nothing to discover. | ✅ Yes |
+| **Do entries have stable memory addresses?** | ✅ Yes. You can take `&s.Field`. | ❌ **No** |
+| **Iteration order** | not applicable | randomized on purpose |
 
-**Why map entries have no fixed address:** maps use hashes and buckets internally, and rehash as they grow. Entries physically move. So `&m["key"]` is illegal — the address wouldn't stay valid. Struct fields sit at fixed offsets and are addressable.
+**Why map entries have no fixed address.** Maps use hashes and buckets internally. They rehash as they grow, which physically moves entries. So `&m["key"]` is illegal. The address would not stay valid.
+
+Struct fields sit at fixed offsets, so they are addressable.
 
 ---
 
@@ -169,12 +185,13 @@ Oversimplified but a good default. Roughly 70% of the time in backend code, you 
 
 [▶ 3:33:10](https://www.youtube.com/watch?v=tgGNwG_UxFo&t=12790s)
 
-The recurring theme: **maps are for data whose shape you don't know at compile time.**
+There is a clear theme. **Maps are for data whose shape you do not know at compile time.**
 
-- **HTTP headers** — `map[string]string`. You can't enumerate every header a client might send, so a struct is impossible.
-- **Arbitrary JSON** — unmarshal into `map[string]interface{}` when the payload's keys aren't known ahead of time. (If you *do* know them, use a struct with tags — see [07 — Pointers & structs](07-pointers-and-structs.md).)
+**HTTP headers** use `map[string]string`. You cannot list every header a client might send, so a struct is impossible.
 
-The decision usually resolves itself: **known, fixed fields → struct. Unknown or arbitrary keys, or you need fast lookup → map.**
+**Arbitrary JSON** goes into `map[string]interface{}` when you do not know the keys ahead of time. If you *do* know them, use a struct with tags instead. See [07 — Pointers & structs](07-pointers-and-structs.md).
+
+The decision usually makes itself. **Known fixed fields means struct. Unknown keys, or a need for fast lookup, means map.**
 
 ---
 

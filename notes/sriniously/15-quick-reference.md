@@ -28,7 +28,7 @@ i := 7                 // short form — INSIDE FUNCTIONS ONLY
 const Pi = 3.14        // must be initialized; number/string/bool only
 ```
 
-**Which to use:** initial value irrelevant → `var`. Initial value known and meaningful → `:=`. Package level → `var` (no choice).
+**Which to use.** Starting value does not matter, use `var`. Starting value is known and matters, use `:=`. At package level, use `var`. There is no choice there.
 
 ---
 
@@ -46,27 +46,28 @@ const Pi = 3.14        // must be initialized; number/string/bool only
 
 ---
 
-## Type taxonomy
+## Type categories
 
 | Category | Types |
 |---|---|
 | **Basic** | numbers, string, bool |
-| **Aggregate** | array (homogeneous), struct (heterogeneous) |
+| **Aggregate** | array (all same type), struct (mixed types) |
 | **Reference** | pointer, slice, map, channel, function |
 | **Interface** | interface |
 
 Numeric: `int int8 int16 int32 int64` / `uint uint8 uint16 uint32 uint64` / `float32 float64` / `complex64 complex128`
+
 Aliases: `byte` = `uint8`, `rune` = `int32`
 
-**Default to plain `int`.** Size down only when you know the range.
+**Use plain `int` by default.** Only size down when you know the range.
 
 ---
 
-## Conversion & inference
+## Conversion and inference
 
 ```go
-var f float64 = float64(i)   // ALWAYS explicit — no implicit conversion
-v := 42                      // inferred as int; type is fixed forever after
+var f float64 = float64(i)   // ALWAYS explicit — Go never converts for you
+v := 42                      // inferred as int; the type is then fixed forever
 ```
 
 ---
@@ -128,11 +129,11 @@ v.X = 4
 p.X = 9                  // auto-dereferenced, no need for (*p).X
 ```
 
-**Tags:** `` Name string `json:"name"` `` — maps JSON keys to Go fields. Only **exported** (capitalized) fields can be marshaled.
+**Tags** look like `` Name string `json:"name"` ``. They map JSON keys to Go fields. Only **exported** fields can be marshaled.
 
 ---
 
-## Arrays & slices
+## Arrays and slices
 
 ```go
 var a [2]string          // ARRAY — size is part of the type, cannot resize
@@ -144,12 +145,15 @@ s[1:4] / s[:4] / s[1:]   // low inclusive, high exclusive
 len(s) / cap(s)
 ```
 
-**Slice = pointer + length + capacity.** Capacity runs from the slice's first element to the **end of the backing array**.
+**A slice is a pointer, a length, and a capacity.** Capacity runs from the slice's first element to the **end of the backing array**.
 
-- Slices sharing a backing array **see each other's writes**.
-- `s[:n]` keeps capacity; `s[n:]` **reduces** capacity.
-- `append` doubles capacity whenever `len == cap` (up to 256 elements, then ~1.25×).
-- **Know the max size? `make([]T, 0, n)`** and skip every reallocation.
+Slices sharing a backing array **see each other's writes**.
+
+`s[:n]` keeps the capacity. `s[n:]` **reduces** it.
+
+`append` doubles the capacity whenever `len == cap`. This holds up to 256 elements, then it grows by about 1.25×.
+
+**If you know the maximum size, write `make([]T, 0, n)`.** That skips every reallocation.
 
 ---
 
@@ -166,7 +170,7 @@ v, ok := m["k"]                        // comma-ok: does the key exist?
 for k, v := range m { }                // order is RANDOMIZED
 ```
 
-**Keys must be comparable.** Structs to store, maps to look up. Map entries are not addressable.
+**Keys must be comparable.** Use structs to store data. Use maps to look data up. Map entries have no fixed address.
 
 ---
 
@@ -192,12 +196,13 @@ func (v Vertex) Abs() float64   { }   // value receiver — gets a COPY
 func (v *Vertex) Scale(f float64) { } // pointer receiver — can MUTATE
 ```
 
-**Choosing a receiver — three rules:**
-1. Mutating the instance? → **pointer**
-2. Large struct you'd rather not copy? → **pointer**
-3. Any other method on this type uses a pointer? → **pointer** (never mix)
+**Three rules for picking a receiver.**
 
-Otherwise value. Go auto-references/dereferences on method calls, so `v.Scale(10)` works on a value.
+1. Changing the instance? Use a **pointer**.
+2. Large struct you would rather not copy? Use a **pointer**.
+3. Any other method on this type uses a pointer? Use a **pointer**. Never mix.
+
+Otherwise use a value. Go adds `&` and `*` for you on method calls, so `v.Scale(10)` works on a value.
 
 ---
 
@@ -207,10 +212,13 @@ Otherwise value. Go auto-references/dereferences on method calls, so `v.Scale(10
 type Abser interface { Abs() float64 }   // just method signatures
 ```
 
-- **Satisfied implicitly** — no `implements` keyword; having the methods is enough.
-- An interface value holds a **dynamic type + dynamic value**; zero value is `nil`.
-- Calling a method on a nil interface **panics**.
-- Pointer-receiver methods are in `*T`'s method set, not `T`'s.
+Interfaces are **satisfied implicitly**. There is no `implements` keyword. Having the methods is enough.
+
+An interface value holds a **dynamic type and a dynamic value**. Its zero value is `nil`.
+
+Calling a method on a nil interface **panics**.
+
+Pointer-receiver methods belong to `*T`, not to `T`.
 
 ```go
 var i any = "hello"        // any = interface{} — every type satisfies it
@@ -228,7 +236,7 @@ type error interface { Error() string }       // any type with Error() is an err
 
 `if err != nil` works because the zero value of an interface is `nil`.
 
-**Convention:** name interfaces with an `-er` suffix; **declare interfaces on the consumer side**, not the producer side. That's what makes mock-based unit testing work with no mocking library.
+**Conventions.** Name interfaces with an `-er` suffix. **Declare interfaces on the consumer side**, not the producer side. That is what lets you write mock-based unit tests without a mocking library.
 
 ---
 
@@ -240,7 +248,7 @@ Index(si, 15)          // T inferred
 Index[string](ss, "a") // explicit
 ```
 
-Type parameters in `[]` before the value parameters, each with a constraint. Use when two functions share a body and differ only by type.
+Type parameters go in `[]` before the value parameters. Each one has a constraint. Use generics when two functions share a body and differ only by type.
 
 ---
 
@@ -268,10 +276,13 @@ mu.Lock()
 defer mu.Unlock()
 ```
 
-- Goroutines are scheduler-managed and start at ~2–4 KB (vs 256 KB–1 MB for OS threads).
-- **When `main` returns, every goroutine dies.** Main must wait.
-- Spawn order and execution order are **never** guaranteed.
-- *"Don't communicate by sharing memory; share memory by communicating."* Try channels first, mutexes second.
+Goroutines are managed by Go and start at 2–4 KB. OS threads use 256 KB to 1 MB.
+
+**When `main` returns, every goroutine dies.** Main has to wait.
+
+Spawn order and execution order are **never** guaranteed.
+
+The rule: don't communicate by sharing memory, share memory by communicating. Try channels first and mutexes second.
 
 ---
 
@@ -279,22 +290,22 @@ defer mu.Unlock()
 
 | First letter | Scope |
 |---|---|
-| **Capital** | exported — visible to other packages |
+| **Capital** | exported. Other packages can see it. |
 | lowercase | package-private |
 
-Applies to everything: variables, constants, functions, types, struct fields, methods. Package names are always lowercase and short.
+This applies to everything. Variables, constants, functions, types, struct fields, and methods. Package names are always lowercase and short.
 
 ---
 
 ## The rules worth memorizing
 
-1. `:=` inside functions only.
-2. Nothing is ever uninitialized — everything has a zero value.
-3. No implicit type conversion, ever.
+1. `:=` works inside functions only.
+2. Nothing is ever uninitialized. Everything has a zero value.
+3. Go never converts types for you.
 4. Capitalization is the access modifier.
-5. Arrays are fixed size; use slices.
-6. `s = append(s, x)` — always reassign.
-7. Never create a map with `var` — use `make` or a literal.
+5. Arrays are fixed size. Use slices.
+6. Always reassign: `s = append(s, x)`.
+7. Never create a map with `var`. Use `make` or a literal.
 8. Never mix value and pointer receivers on one type.
 9. Interfaces are satisfied implicitly, and belong on the consumer side.
-10. `main` returning kills every goroutine.
+10. When `main` returns, every goroutine dies.

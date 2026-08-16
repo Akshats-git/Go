@@ -6,7 +6,7 @@
 
 [▶ 1:37:04](https://www.youtube.com/watch?v=tgGNwG_UxFo&t=5824s)
 
-Go has **no `while`, no `do-while`**. Just `for`. Every other loop shape is `for` with parts removed.
+Go has **no `while` and no `do-while`**. It only has `for`. Every other loop shape is just `for` with parts removed.
 
 ```go
 sum := 0
@@ -16,13 +16,13 @@ for i := 0; i < 10; i++ {
 fmt.Println(sum)   // 45
 ```
 
-Three parts, separated by semicolons, **no parentheses around them**:
+There are three parts, separated by semicolons. Note there are **no parentheses** around them.
 
-1. **Init statement** — `i := 0`, runs once before the loop
-2. **Condition** — `i < 10`, checked before each iteration
-3. **Post statement** — `i++`, runs after each iteration body
+1. **Init statement.** `i := 0`. Runs once, before the loop starts.
+2. **Condition.** `i < 10`. Checked before each iteration.
+3. **Post statement.** `i++`. Runs after each pass through the body.
 
-The loop variable `i` is **lexically scoped to the loop** — it doesn't exist outside the braces.
+The loop variable `i` only exists inside the loop. It does not exist outside the braces.
 
 ### The cycle
 
@@ -30,9 +30,9 @@ The loop variable `i` is **lexically scoped to the loop** — it doesn't exist o
 init → [ condition → body → post ] → condition → body → post → … → condition false → exit
 ```
 
-The video walks this with the VS Code debugger — worth doing yourself once with a breakpoint inside the loop. Watching `i` and `sum` change per iteration makes the mechanics concrete in a way reading doesn't.
+The video walks through this with the VS Code debugger. It is worth doing yourself once. Put a breakpoint inside the loop and watch `i` and `sum` change. Seeing it makes the mechanics stick in a way that reading does not.
 
-### While loop — drop init and post
+### While loop: drop init and post
 
 ```go
 sum := 1
@@ -42,9 +42,9 @@ for sum < 1000 {
 fmt.Println(sum)   // 1024
 ```
 
-Keep only the condition. That's Go's `while`.
+Keep only the condition. That is Go's `while`.
 
-### Infinite loop — drop everything
+### Infinite loop: drop everything
 
 ```go
 for {
@@ -52,7 +52,7 @@ for {
 }
 ```
 
-Without a condition the program never exits this loop. To leave it you need an explicit `break` (or `return`):
+With no condition, the program never leaves this loop. To get out you need an explicit `break` or `return`.
 
 ```go
 sum := 1
@@ -64,11 +64,13 @@ for {
 }
 ```
 
-**Infinite loops are not a bug — they're a pattern.** They're used heavily in concurrency, where you sit in a loop listening for signals from goroutines and break out when a particular signal arrives. See [14 — Concurrency](14-concurrency.md), specifically `select`.
+**An infinite loop is not a bug. It is a pattern.**
 
-### `range` — iterating collections
+It is used heavily in concurrency. You sit in a loop, listen for signals from goroutines, and break out when the right signal arrives. See [14 — Concurrency](14-concurrency.md), especially the `select` section.
 
-Covered in [08 — Arrays & slices](08-arrays-and-slices.md), [09 — Maps](09-maps.md), and [14 — Concurrency](14-concurrency.md) (ranging over a channel).
+### `range`
+
+`range` is the other way to loop. It is covered in [08 — Arrays & slices](08-arrays-and-slices.md), [09 — Maps](09-maps.md), and [14 — Concurrency](14-concurrency.md).
 
 ---
 
@@ -82,11 +84,11 @@ if x < 0 {
 }
 ```
 
-No parentheses around the condition. The condition must evaluate to a bool.
+No parentheses around the condition. The condition must be a bool.
 
-### The init statement — Go's signature `if` feature
+### The init statement
 
-Like `for`, `if` can run a short statement before the condition:
+Like `for`, an `if` can run a short statement before its condition.
 
 ```go
 if v := math.Pow(x, n); v < lim {
@@ -98,9 +100,9 @@ if v := math.Pow(x, n); v < lim {
 // v is NOT accessible here — undefined: v
 ```
 
-`v` is scoped to the `if`/`else` blocks only.
+`v` exists only inside the `if` and `else` blocks.
 
-**Why this matters:** it's the backbone of idiomatic Go error handling. Instead of declaring a variable, calling, then checking, you do all three in one line:
+**This matters a lot.** It is the backbone of Go error handling. Instead of declaring a variable, calling a function, then checking, you do all three on one line.
 
 ```go
 if err := doSomething(); err != nil {
@@ -108,11 +110,11 @@ if err := doSomething(); err != nil {
 }
 ```
 
-This kills a lot of boilerplate and keeps the error variable from leaking into the enclosing scope.
+This removes a lot of boilerplate. It also keeps the error variable from leaking into the surrounding scope.
 
-### `else if` / `else`
+### `else if` and `else`
 
-Standard behavior — conditions evaluated top to bottom, first true branch wins.
+These behave the way you expect. Conditions are checked top to bottom. The first true branch wins.
 
 ---
 
@@ -133,12 +135,13 @@ default:
 }
 ```
 
-- Like `for` and `if`, it takes an **optional init statement** (`os := runtime.GOOS;`). `os` is scoped to the switch block.
-- **No fallthrough by default.** The moment a case matches, its body runs and the switch exits. You do *not* write `break` — that's the big difference from C/Java/JavaScript. (An explicit `fallthrough` keyword exists if you ever want the C behavior.)
+Like `for` and `if`, `switch` takes an **optional init statement**. Here that is `os := runtime.GOOS;`. The variable `os` only exists inside the switch block.
+
+**There is no fallthrough by default.** When a case matches, its body runs and the switch exits. You do **not** write `break`. This is the big difference from C, Java, and JavaScript. An explicit `fallthrough` keyword exists if you ever want the C behavior.
 
 ### Cases can be expressions
 
-Cases aren't limited to constants. They can be arbitrary expressions evaluated at runtime:
+Cases are not limited to constants. They can be expressions evaluated at runtime.
 
 ```go
 today := time.Now().Weekday()
@@ -151,7 +154,7 @@ case today + 1:
 }
 ```
 
-### Switch with no condition — the clean `if/else if` chain
+### Switch with no condition
 
 ```go
 t := time.Now()
@@ -165,11 +168,13 @@ default:
 }
 ```
 
-An empty `switch` is equivalent to `switch true`. Cases are checked top to bottom; the first true one runs and exits. This is the idiomatic replacement for a long `if / else if / else if / else` ladder — much easier to read.
+An empty `switch` means `switch true`. Cases are checked top to bottom. The first true one runs, then the switch exits.
+
+This is the idiomatic replacement for a long `if / else if / else if / else` chain. It reads much better.
 
 ### Type switch
 
-A special form used with interfaces. See [12 — Interfaces](12-interfaces.md).
+There is a special form used with interfaces. See [12 — Interfaces](12-interfaces.md).
 
 ---
 
@@ -177,7 +182,7 @@ A special form used with interfaces. See [12 — Interfaces](12-interfaces.md).
 
 [▶ 1:50:00](https://www.youtube.com/watch?v=tgGNwG_UxFo&t=6600s)
 
-A concept fairly unique to Go, and an important one.
+This concept is fairly unique to Go, and it is important.
 
 ```go
 func main() {
@@ -188,16 +193,16 @@ func main() {
 // world
 ```
 
-### Mechanics
+### How it works
 
-When you write `defer <expression>`:
+When you write `defer <expression>`, four things happen.
 
-1. The expression's **arguments are evaluated immediately**.
-2. The **call itself is pushed onto a stack** and not executed.
+1. The arguments are **evaluated immediately**.
+2. The call itself is **pushed onto a stack**. It does not run yet.
 3. The rest of the function runs normally.
-4. When the function **returns**, Go pops the stack and executes every deferred call — **LIFO order, last deferred runs first**.
+4. When the function **returns**, Go pops the stack and runs every deferred call. The order is **LIFO**. The last one deferred runs first.
 
-### The stack demonstration
+### The stack in action
 
 ```go
 func main() {
@@ -225,17 +230,21 @@ done
 0
 ```
 
-Ten calls pushed in order 0→9, popped in order 9→0. Classic stack.
+Ten calls were pushed in order 0 to 9. They come back out in order 9 to 0. That is a stack.
 
 ---
 
-### Why `defer` exists — the two real reasons
+### Why `defer` exists
 
-#### 1. Humans forget to clean up
+There are two real reasons.
 
-Whenever you *start* something you must *stop* it — open a file, close it; open a database connection, close it. Miss the close and you leak memory, especially inside a loop opening many resources.
+#### 1. People forget to clean up
 
-The naive shape:
+Whenever you *start* something, you have to *stop* it. You open a file, you close it. You open a database connection, you close it.
+
+If you forget, you leak memory. This gets bad fast inside a loop that opens many resources.
+
+Here is the naive version:
 
 ```go
 f := os.Open("file.txt")
@@ -243,19 +252,21 @@ f := os.Open("file.txt")
 f.Close()          // easy to forget
 ```
 
-With `defer` the cleanup sits **right next to the acquisition**:
+With `defer`, the cleanup sits right next to the thing it cleans up:
 
 ```go
 f := os.Open("file.txt")
-defer f.Close()    // guaranteed, and visible at the point of acquisition
+defer f.Close()    // guaranteed, and visible right where you opened it
 // ... 200 lines of business logic ...
 ```
 
-Readability win: anyone scanning the function sees "open, will close" in two adjacent lines.
+This is also more readable. Anyone scanning the function sees "open, will close" in two lines next to each other.
 
 #### 2. Panics
 
-A **panic** is Go's rough equivalent of an exception — an error that halts normal execution flow. (Go deliberately doesn't have exceptions; it returns errors as values. `panic` is for the genuinely unrecoverable.)
+A **panic** is Go's rough equivalent of an exception. It is an error that stops the normal flow of execution.
+
+Go deliberately has no exceptions. It returns errors as values instead. `panic` is reserved for things that are genuinely unrecoverable.
 
 Without `defer`:
 
@@ -269,13 +280,13 @@ With `defer`:
 open file → defer Close() → run logic → 💥 panic → deferred calls run → Close() executes ✅
 ```
 
-**Deferred functions run when the function returns *and* when it panics.** That's the guarantee. It doesn't matter whether the function succeeded — the cleanup happens.
+**Deferred functions run when the function returns and when it panics.** That is the guarantee. It does not matter whether the function succeeded. The cleanup happens.
 
 ---
 
 ### Real-world check (fider)
 
-A test setup:
+Here is a test setup:
 
 ```go
 func TestSomething(t *testing.T) {
@@ -285,7 +296,9 @@ func TestSomething(t *testing.T) {
 }
 ```
 
-Regardless of whether the test passes, fails, or panics, the database connection is torn down. The pattern is: **acquire on one line, `defer` the release on the very next line.**
+The database connection is torn down whether the test passes, fails, or panics.
+
+The pattern is simple. **Acquire on one line. Defer the release on the very next line.**
 
 ---
 

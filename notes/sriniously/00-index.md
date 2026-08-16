@@ -13,9 +13,11 @@
 
 ## How to use these notes
 
-The video's own advice: **do the Tour of Go yourself first** (2–3 hours), *then* watch the video / read these notes. The goal of the first pass is to get a feel for the syntax, not to understand everything.
+The video gives one piece of advice up front. Do the Tour of Go yourself first. It takes 2–3 hours. Then watch the video or read these notes.
 
-These notes are split by topic. Read them in order the first time; after that use [15-quick-reference.md](15-quick-reference.md) as a cheat sheet.
+The point of the first pass is to get a feel for the syntax. You are not supposed to understand everything yet.
+
+These notes are split by topic. Read them in order the first time. After that, use [15-quick-reference.md](15-quick-reference.md) as a cheat sheet.
 
 ---
 
@@ -41,12 +43,18 @@ These notes are split by topic. Read them in order the first time; after that us
 
 ---
 
-## The one-paragraph summary
+## The short summary
 
-Go organizes code into **modules** (one `go.mod` per project) containing **packages** (one per directory, lowercase short names). Capitalization is the visibility mechanism — capitalized identifiers are exported, lowercase are package-private. Everything is **statically typed with no implicit conversion**, and every variable is **always initialized to a zero value** (`0`, `false`, `""`, `nil` for reference types). The core data structures are **structs** (heterogeneous, for storing), **slices** (dynamic arrays, the workhorse), and **maps** (for fast lookup). Behavior is attached to types via **methods**, and abstraction happens through **interfaces**, which are satisfied *implicitly* — this powers `error`, `Stringer`, and the dependency-injection/mocking pattern used across real Go backends. Concurrency is provided by **goroutines** (cheap, scheduler-managed) communicating over **channels**, following the maxim *"don't communicate by sharing memory; share memory by communicating."*
+Go puts code into **modules**. One module per project, described by a `go.mod` file. Each module contains **packages**. One package per directory. Package names are lowercase and short.
 
----
+Capitalization controls visibility. A capitalized name is visible to other packages. A lowercase name is not.
 
-## Accuracy notes
+Go is **statically typed**. It never converts types for you. You always write the conversion yourself.
 
-Where the video's spoken explanation is slightly off (a handful of places), these notes flag it with a **⚠️ Correction** callout and give the accurate version. The concepts are all correct — these are small numeric/mechanical slips, mostly from speaking off the cuff.
+Every variable starts with a **zero value**. Numbers start at `0`. Bools start at `false`. Strings start at `""`. Reference types start at `nil`. Nothing is ever undefined.
+
+There are three data structures you will use constantly. **Structs** hold mixed fields and are for storing data. **Slices** are dynamic arrays and are the workhorse. **Maps** are for fast lookup.
+
+You give a type behavior by attaching **methods** to it. You abstract over types with **interfaces**. Interfaces are satisfied automatically. A type just needs the right methods. This one idea powers `error`, `Stringer`, and the dependency injection pattern used in real Go backends.
+
+Concurrency comes from **goroutines**. They are cheap and managed by Go, not the operating system. Goroutines talk to each other over **channels**. The guiding rule is: don't communicate by sharing memory, share memory by communicating.

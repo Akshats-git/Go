@@ -1,6 +1,6 @@
 # 08 — Arrays & Slices
 
-The longest section of the video (~55 minutes) and the most important data structure in day-to-day Go.
+This is the longest section of the video, about 55 minutes. It is also the most important data structure in day-to-day Go.
 
 ---
 
@@ -8,7 +8,7 @@ The longest section of the video (~55 minutes) and the most important data struc
 
 [▶ 2:22:34](https://www.youtube.com/watch?v=tgGNwG_UxFo&t=8554s)
 
-An array is a collection of **homogeneous** data — every element the same type.
+An array is a collection of **homogeneous** data. Every element has the same type.
 
 ```go
 var a [2]string
@@ -20,13 +20,15 @@ fmt.Println(a)            // [Hello World]
 primes := [6]int{2, 3, 5, 7, 11, 13}
 ```
 
-### The one thing to remember: **size is part of the type**
+### The one thing to remember
 
-`[2]string` and `[3]string` are **different types**. Combined with static typing, this means:
+**The size is part of the type.**
 
-> **Arrays cannot be resized.** You can't grow one, shrink one, or append to one. Whatever length you declare is the length forever.
+`[2]string` and `[3]string` are **different types**. Go is statically typed. So this has a big consequence.
 
-That's why arrays are comparatively rare in real Go code. You'll use one when you know a fixed count up front. The rest of the time you use a **slice**.
+> **Arrays cannot be resized.** You cannot grow one. You cannot shrink one. You cannot append to one. The length you declare is the length forever.
+
+That is why arrays are rare in real Go code. You use one when you know a fixed count up front. The rest of the time you use a **slice**.
 
 ---
 
@@ -34,9 +36,11 @@ That's why arrays are comparatively rare in real Go code. You'll use one when yo
 
 [▶ 2:25:34](https://www.youtube.com/watch?v=tgGNwG_UxFo&t=9334s)
 
-A slice is a dynamically-sized, flexible view into an array. It's a **reference type** — it doesn't hold data, it points at a **backing array**.
+A slice is a dynamically-sized view into an array.
 
-### Creating a slice from an array
+It is a **reference type**. It does not hold data. It points at a **backing array**.
+
+### Making a slice from an array
 
 ```go
 primes := [6]int{2, 3, 5, 7, 11, 13}
@@ -44,13 +48,13 @@ s := primes[1:4]
 fmt.Println(s)   // [3 5 7]
 ```
 
-`[low:high]` — **low is inclusive, high is exclusive**. `[1:4]` gives indices 1, 2, 3.
+The syntax is `[low:high]`. **Low is included. High is excluded.** So `[1:4]` gives you indices 1, 2, and 3.
 
 ---
 
-## Slice internals — the three fields
+## What a slice actually is
 
-This is the model that makes everything else make sense. A slice is a small struct with three fields:
+This model explains everything else. A slice is a small struct with three fields.
 
 ```
 ┌──────────────────────────────────┐
@@ -66,17 +70,19 @@ This is the model that makes everything else make sense. A slice is a small stru
                     0   1   2   3    4    5
 ```
 
-| Field | Definition |
+| Field | What it means |
 |---|---|
-| **pointer** | address of the first element the slice covers |
-| **length** | how many elements the slice currently exposes |
-| **capacity** | count from the slice's first element **to the end of the backing array** — *not* to the end of the slice |
+| **pointer** | the address of the first element the slice covers |
+| **length** | how many elements the slice currently shows you |
+| **capacity** | the count from the slice's first element **to the end of the backing array** |
 
-That capacity definition is the one people get wrong. Capacity is measured against the **backing array**, not the slice.
+That last one is the definition people get wrong. Capacity is measured against the **backing array**, not against the slice.
 
 ---
 
-## Slices share the backing array — the aliasing gotcha
+## Slices share their backing array
+
+This is the biggest gotcha.
 
 ```go
 names := [4]string{"John", "Paul", "George", "Ringo"}
@@ -92,15 +98,15 @@ fmt.Println(a, b)   // [John XXX] [XXX George]
 fmt.Println(names)  // [John XXX George Ringo]
 ```
 
-**One write through `b` changed `a` and `names` too.** All three view the same underlying storage.
+**One write through `b` changed `a` and `names` too.** All three view the same storage underneath.
 
-This is the practical meaning of "reference type": modify a slice element and every slice sharing that backing array sees the change. It's the single biggest source of surprise bugs with slices.
+This is what "reference type" means in practice. Change one element and every slice sharing that backing array sees it. It is the single biggest source of surprise bugs with slices.
 
 ---
 
-## Slice literals — creating without an array
+## Slice literals
 
-You don't need an array first. Declare a slice directly and Go creates the backing array for you:
+You do not need an array first. You can declare a slice directly. Go creates the backing array for you.
 
 ```go
 q := []int{2, 3, 5, 7, 11, 13}
@@ -116,9 +122,9 @@ s := []struct {
 }
 ```
 
-**How to tell an array from a slice at a glance:** an array type has a number in the brackets (`[6]int`); a slice has empty brackets (`[]int`).
+**Here is how to tell an array from a slice at a glance.** An array type has a number in the brackets, like `[6]int`. A slice has empty brackets, like `[]int`.
 
-For a slice literal, `len == cap == number of elements`.
+For a slice literal, `len` and `cap` both equal the number of elements.
 
 ---
 
@@ -159,17 +165,21 @@ printSlice(s)     // len=2 cap=4 [5 7]
 
 ### Reading that trace
 
-- `s[:0]` — length 0, but **capacity stays 6**. The backing array is untouched; you just narrowed the window. This is why you can extend it again.
-- `s[:4]` — re-widens to length 4. Legal because cap ≥ 4.
-- `s[2:]` — you moved the **start pointer** forward by 2, so capacity drops from 6 to 4.
+`s[:0]` gives length 0, but **capacity stays 6**. The backing array is untouched. You only narrowed the window. That is why you can widen it again.
+
+`s[:4]` widens it back to length 4. This is legal because capacity is at least 4.
+
+`s[2:]` moves the **start pointer** forward by 2. So capacity drops from 6 to 4.
 
 ### The capacity rule
 
-> **Capacity only shrinks when you re-slice from an index greater than 0.** Slicing off the *end* (`s[:n]`) doesn't touch capacity, because capacity is measured from the start pointer to the end of the backing array.
+> **Capacity only shrinks when you re-slice starting from an index above 0.**
+
+Slicing off the end with `s[:n]` does not touch capacity. That is because capacity is measured from the start pointer to the end of the backing array.
 
 ---
 
-## Zero value of a slice is `nil`
+## The zero value of a slice is `nil`
 
 ```go
 var s []int
@@ -179,15 +189,17 @@ if s == nil {
 }
 ```
 
-A `var`-declared slice is `nil` with len 0 and cap 0. It prints as `[]` but it is genuinely `nil`, and comparing to `nil` is how you test it.
+A slice declared with `var` is `nil`. Its length is 0 and its capacity is 0.
 
-Unlike a nil map, **a nil slice is safe to `append` to** — `append` allocates for you.
+It prints as `[]`, but it really is `nil`. Comparing to `nil` is how you check.
+
+Unlike a nil map, **a nil slice is safe to `append` to.** `append` does the allocation for you.
 
 ---
 
 ## Creating slices with `make`
 
-`make` is a built-in function for initializing **reference types** — slices, maps, and channels.
+`make` is a built-in function. It initializes **reference types**: slices, maps, and channels.
 
 ```go
 make([]int, 5)      // type, length          → cap defaults to len = 5
@@ -196,11 +208,11 @@ make([]int, 0, 5)   // type, length, capacity → len 0, cap 5
 
 | Argument | Meaning |
 |---|---|
-| 1st | the type (`[]int` — must be explicit since `make` also builds maps/channels) |
+| 1st | the type, like `[]int`. It must be explicit, since `make` also builds maps and channels. |
 | 2nd | length |
-| 3rd (optional) | capacity — defaults to length |
+| 3rd (optional) | capacity. Defaults to the length. |
 
-**Capacity can never be less than length.** That's an error.
+**Capacity can never be less than length.** That is an error.
 
 ### Worked example
 
@@ -211,10 +223,13 @@ c := b[:2]               // len=2 cap=5 [0 0]
 d := c[2:5]              // len=3 cap=3 [0 0 0]
 ```
 
-- `a` — length 5 means five slots, each holding the zero value of `int`.
-- `b` — length 0 so it prints empty, but has room for 5.
-- `c` — sliced from index 0, so cap stays 5.
-- `d` — sliced starting at index 2, so cap drops from 5 to 3. You can slice up to `cap`, not just `len`.
+`a` has length 5. So it has five slots, each holding the zero value of `int`.
+
+`b` has length 0, so it prints empty. But it has room for 5.
+
+`c` was sliced from index 0. So capacity stays at 5.
+
+`d` was sliced starting at index 2. So capacity drops from 5 to 3. Notice you can slice up to `cap`, not just up to `len`.
 
 ---
 
@@ -231,7 +246,7 @@ board[0][0] = "X"
 board[2][2] = "O"
 ```
 
-A slice whose element type is another slice. Works exactly as intuition suggests.
+This is a slice whose elements are also slices. It works exactly the way you would expect.
 
 ---
 
@@ -246,18 +261,21 @@ s = append(s, 1)          // len=2 cap=2 [0 1]
 s = append(s, 2, 3, 4)    // len=5 cap=6 [0 1 2 3 4]
 ```
 
-- **`append` is variadic** — it takes the slice, then any number of elements.
-- **You must reassign the result** (`s = append(s, x)`). `append` may allocate a new backing array, so it returns a (possibly different) slice.
+Two rules here.
 
-### What `append` does under the hood
+**`append` is variadic.** It takes the slice first, then any number of elements.
 
-1. Checks whether the backing array has spare capacity (`len < cap`).
-2. **If yes** — writes into the existing array, bumps length. Cheap.
-3. **If no** — allocates a **new, larger backing array**, copies everything over, points the returned slice at it. Expensive.
+**You must reassign the result.** Always write `s = append(s, x)`. `append` may allocate a new backing array, so it returns a slice that might be different from the one you passed in.
 
-### The growth algorithm
+### What `append` does internally
 
-Trace it with a loop:
+1. It checks whether the backing array has spare room, meaning `len < cap`.
+2. **If there is room,** it writes into the existing array and bumps the length. This is cheap.
+3. **If there is no room,** it allocates a **new, larger backing array**, copies everything over, and points the returned slice at it. This is expensive.
+
+### How capacity grows
+
+You can watch it happen:
 
 ```go
 var s []int
@@ -280,15 +298,17 @@ len=9  cap=16    ← doubled
 ...
 ```
 
-**The pattern: every time `len == cap`, the next append doubles the capacity** and reallocates.
+**The pattern is simple. Whenever `len == cap`, the next append doubles the capacity** and reallocates.
 
-The doubling holds up to a threshold of **256 elements**; past that Go grows by roughly **1.25×** instead of 2× (there's a `nextslicecap` function in the runtime source implementing this). Internal detail — the point is that growth is amortized, not linear.
+The doubling continues up to about 256 elements. After that Go grows by roughly **1.25×** instead of 2×. There is a `nextslicecap` function in the runtime source that implements this. It is an internal detail. The point is that growth is amortized, not linear.
 
 ---
 
-## The one optimization you should actually apply
+## The one optimization worth applying
 
-Every reallocation means: find new memory, allocate a bigger array, copy every element. If you know the final size in advance, you can skip all of it.
+Every reallocation costs you. Go has to find new memory, allocate a bigger array, and copy every element.
+
+If you know the final size ahead of time, you can skip all of that.
 
 ```go
 // ❌ 3 reallocations to reach 5 elements: cap 0→1→2→4→8
@@ -307,11 +327,13 @@ for i := 0; i < 5; i++ {
 // cap stays 5 through every iteration
 ```
 
-**Note `make([]int, 0, 5)` — length 0, capacity 5.** Not `make([]int, 5, 5)`, which would pre-fill five zeros that you'd then append *after*.
+**Look carefully at `make([]int, 0, 5)`.** Length 0, capacity 5.
 
-> **Rule of thumb:** whenever you know the maximum number of elements ahead of time — a database result set, a fixed transformation of an existing slice — preallocate with `make([]T, 0, n)`.
+Do not write `make([]int, 5, 5)`. That pre-fills five zeros, and your appends would go *after* them.
 
-This is the entire practical reason for understanding capacity. You will otherwise never think about it: `append` handles everything.
+> **Rule of thumb.** If you know the maximum number of elements ahead of time, preallocate with `make([]T, 0, n)`. This applies to database result sets and to transforming an existing slice.
+
+This is the only practical reason to understand capacity. Otherwise you will never think about it. `append` handles everything.
 
 ---
 
@@ -319,7 +341,7 @@ This is the entire practical reason for understanding capacity. You will otherwi
 
 [▶ 3:17:33](https://www.youtube.com/watch?v=tgGNwG_UxFo&t=11853s)
 
-The traditional way works:
+The traditional loop works:
 
 ```go
 for i := 0; i < len(pow); i++ {
@@ -327,7 +349,7 @@ for i := 0; i < len(pow); i++ {
 }
 ```
 
-But `range` is the idiom:
+But `range` is the idiomatic way:
 
 ```go
 for i, v := range pow {
@@ -335,18 +357,18 @@ for i, v := range pow {
 }
 ```
 
-Each iteration yields **two values: the index, and a *copy* of the element.**
+Each pass gives you **two values. The index, and a *copy* of the element.**
 
-> ⚠️ **`v` is a copy.** Assigning to `v` inside the loop does **not** modify the slice. To mutate, index directly: `pow[i] = ...`.
+> ⚠️ **`v` is a copy.** Assigning to `v` inside the loop does **not** change the slice. To change it, index directly with `pow[i] = ...`.
 
-### Skipping either value
+### Skipping a value
 
 ```go
 for _, v := range pow { ... }   // index discarded
 for i := range pow { ... }      // value omitted entirely
 ```
 
-`_` is the blank identifier — "I know there's a value here, I don't want it."
+`_` is the blank identifier. It means "there is a value here and I do not want it."
 
 ---
 
@@ -354,7 +376,7 @@ for i := range pow { ... }      // value omitted entirely
 
 [▶ 3:18:40](https://www.youtube.com/watch?v=tgGNwG_UxFo&t=11920s)
 
-All three patterns appear constantly:
+All three patterns show up constantly:
 
 ```go
 tags := []string{"bug", "feature"}          // slice literal
@@ -362,7 +384,7 @@ titles := make([]string, 31)                 // make with known size
 for _, title := range titles { ... }         // range, index discarded
 ```
 
-Slices are among the most-used types in any Go codebase.
+Slices are one of the most-used types in any Go codebase.
 
 ---
 

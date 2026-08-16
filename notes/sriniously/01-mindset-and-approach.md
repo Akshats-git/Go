@@ -2,47 +2,53 @@
 
 [▶ 0:00](https://www.youtube.com/watch?v=tgGNwG_UxFo&t=0s)
 
-The first ~28 minutes are not code. They're the framing for the whole series. Worth reading once, then ignoring.
+The first 28 minutes have no code. They set up the whole series. Read this once, then move on.
 
 ---
 
 ## What this video is
 
-- A **complementary resource to [A Tour of Go](https://go.dev/tour/welcome/1)** — not a replacement for it.
-- The author copy-pastes each Tour example into a local editor, runs it, and explains it with his own commentary.
-- Its distinguishing feature: after each concept, he jumps to a **real open-source production codebase** (fider, incubator-answer) and shows that same concept in the wild. The goal is to collapse the gap between "learn concept" and "see concept used in real code" from years to seconds.
+It is a companion to [A Tour of Go](https://go.dev/tour/welcome/1). It is not a replacement for it.
 
-## What this video is *not*
+The author copies each Tour example into a local editor, runs it, and explains it in his own words.
 
-- Not a traditional exhaustive tutorial exploring every corner of the language.
-- Not about installing Go or configuring your editor (out of scope — figure it out).
-- Scoped specifically to what a **backend / application developer** needs, not a library author.
+One thing makes it different from other tutorials. After each concept, he opens a real production codebase (fider, incubator-answer) and shows the same concept being used there. The goal is to close the gap between learning a concept and seeing it in real code. Normally that gap takes years. Here it takes seconds.
+
+## What this video is not
+
+It is not a full tutorial that covers every corner of the language.
+
+It does not cover installing Go or setting up your editor. That is considered out of scope. You are expected to figure it out.
+
+It is scoped to what a **backend developer** needs. It is not aimed at library authors.
 
 ## Prerequisites
 
-Basic programming literacy — you know what variables, arrays, and loops are. Prior experience in another language helps but isn't required.
+You need basic programming knowledge. You should know what variables, arrays, and loops are.
+
+Experience in another language helps. It is not required.
 
 ---
 
 ## The recommended workflow
 
-1. **Pause and go do the entire Tour of Go yourself first.** Read the left pane, run the right pane. 2–3 hours in one sitting.
-2. Don't worry about understanding it. The goal of pass one is *feel for the syntax*.
-3. **Then** watch this video / read these notes for the explanation and real-world context.
+1. Stop now and do the entire Tour of Go yourself. Read the left pane. Run the code in the right pane. It takes 2–3 hours in one sitting.
+2. Do not worry about understanding it. The goal of the first pass is to get a feel for the syntax.
+3. Then watch the video or read these notes for the explanation and the real-world context.
 
 > "Before you understand the concept you should have a feel of the syntax."
 
 ---
 
-## The core thesis: programming is pattern matching
+## The main idea: programming is pattern matching
 
-Being a good programmer has little to do with genius or talent. It's **pattern matching** — the developed ability to reach for the right tool at the right moment.
+Being a good programmer has little to do with talent. It comes down to **pattern matching**. That means reaching for the right tool at the right moment without thinking about it.
 
-> Example: you see a comma-separated string and need an array. Instantly `split` comes to mind — Python, Java, Go, JavaScript, doesn't matter. You don't reason about it. That's pattern matching.
+Here is an example. You see a comma-separated string and you need an array. You immediately think of `split`. It does not matter whether you are in Python, Java, Go, or JavaScript. You do not reason it out. That is pattern matching.
 
-Pattern matching improves with **code velocity** — the more code you write and read, the better it gets. It becomes muscle memory.
+Pattern matching improves with volume. The more code you write and read, the better it gets. Eventually it becomes muscle memory.
 
-**Consequence for how you learn:** understanding should *not* be your priority. Consistency and volume should be. Understanding follows.
+This changes how you should learn. Understanding should not be your priority. Consistency and volume should be. Understanding comes later on its own.
 
 ---
 
@@ -50,36 +56,45 @@ Pattern matching improves with **code velocity** — the more code you write and
 
 ### 1. Don't try to understand everything
 
-The worst thing you can do when learning a new language is demand full comprehension up front. It only produces intimidation, and intimidation makes people quit.
+The worst thing you can do with a new language is demand that you understand all of it right away. It only makes you feel intimidated. Feeling intimidated is what makes people quit.
 
-- If something doesn't land in this video, it will land later — reading standard library code, reading open-source repos, building projects.
-- Trust the process. Keep writing, keep reading.
+If something does not click in this video, it will click later. It will click while reading standard library code. Or while reading open source projects. Or while building your own projects.
 
-### 2. Go has "advanced-looking" concepts you can defer
+Trust the process. Keep writing. Keep reading.
 
-Concepts like interfaces, value-based error handling, concurrency primitives (fan-in/fan-out, mutexes, select, channel directions), and reflection get enormous coverage in tutorials — but for an **application developer**, they're roughly **20% of what you actually use**.
+### 2. Some Go concepts can wait
 
-- **Interfaces are the exception** — you will use those a lot.
-- Advanced concurrency patterns: you can work productively for *years* without hand-rolling fan-out/fan-in. You'll use them indirectly through libraries.
-- Testing is important — but it belongs in the project-building phase, not the basics phase.
+Tutorials spend a lot of time on interfaces, error handling, concurrency (fan-in, fan-out, mutexes, select, channel directions), and reflection.
 
-Know that these exist, know roughly when they're needed, and move on. Treating them as blockers while learning the basics is what makes people abandon Go as "a complicated systems language."
+For an application developer, these are about **20% of what you actually use**.
+
+Interfaces are the exception. You will use those a lot.
+
+Advanced concurrency patterns are different. You can work for years without writing fan-out or fan-in yourself. You will use them indirectly through libraries.
+
+Testing matters, but it belongs to the project-building phase. Not the basics phase.
+
+Just know these concepts exist. Know roughly when they are needed. Then move on. Treating them as blockers while learning the basics is what makes people give up on Go and call it a complicated systems language.
 
 ---
 
-## While reading the real-world code examples
+## When reading the real-world code examples
 
-When the video jumps into fider or incubator-answer: **look only at the specific lines being pointed at.** Do not read the surrounding code and get intimidated. Reading whole codebases end to end comes later in the series.
+The video jumps into fider and incubator-answer often. When it does, look only at the lines being pointed at.
+
+Do not read the surrounding code. It will only intimidate you. Reading whole codebases comes later in the series.
 
 ---
 
-## The success criterion (from the outro)
+## What success looks like
 
 [▶ 5:51:58](https://www.youtube.com/watch?v=tgGNwG_UxFo&t=21118s)
 
 > "My goal with this video was to get you to 10%."
 
-The video explicitly acknowledges it skips things — reflection, directional channel types, and anything not covered by the Tour of Go. The remaining 60% comes from the rest of the series: Effective Go, the modules reference, the language spec, reading standard library source, reading production open-source backends, and finally building projects.
+The video openly admits it skips things. It skips reflection, directional channel types, and anything the Tour of Go does not cover.
+
+The remaining 60% comes from the rest of the series. That covers Effective Go, the modules reference, the language spec, reading standard library source, reading production open source backends, and finally building projects.
 
 ---
 
